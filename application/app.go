@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/MassouAnas/ChiBackEnd/model"
+	"github.com/MassouAnas/ChiBackEnd/handler"
 	"github.com/MassouAnas/ChiBackEnd/repository/todo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -31,25 +30,34 @@ func New(mongodbURI string) (*App, error){
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 
+	mongoRepo := todo.NewMongoRepo(client)
+
+    // Initialize Todo handler with the MongoDB repository
+    todoHandler := &handler.Todo{
+        Repo: mongoRepo,
+    }
+
 	app := &App{
-		router: listRoutes(),
+		router: listRoutes(todoHandler),
 		client: client,
 	}
-	repo := todo.NewMongoRepo(client)
 
-	now := time.Now()
-	t := model.Todo{
-	TodoID: 1,   
-	TodoTitle: "First todo", 
-	TodoDescr: "This just might be our first todo",
-	CreatedAt:&now,
-	FinishedAt: nil,  
-	}
+	//The logic used to create our first entery in the todo collection
+	// repo := todo.NewMongoRepo(client)
+
+	// now := time.Now()
+	// t := model.Todo{
+	// TodoID: 1,   
+	// TodoTitle: "First todo", 
+	// TodoDescr: "This just might be our first todo",
+	// CreatedAt:&now,
+	// FinishedAt: nil,  
+	// }
 	
-	err = repo.Insert(context.Background(), t)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to insert todo %w", err)
-	}
+	// err = repo.Insert(context.Background(), t)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to insert todo: %w", err)
+	// }
 
 	return app, nil
 }

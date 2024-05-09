@@ -9,7 +9,7 @@ import (
 	"github.com/MassouAnas/ChiBackEnd/handler"
 )
 
-func listRoutes() *chi.Mux{
+func listRoutes(todoHandler *handler.Todo) *chi.Mux{
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
@@ -17,12 +17,13 @@ func listRoutes() *chi.Mux{
 	router.Get("/", func(w http.ResponseWriter,r *http.Request){
 		w.WriteHeader(http.StatusOK)
 	})
-	router.Route("/Todo", LoadTodoRoutes)
+	router.Route("/todo", func(r chi.Router) {
+		LoadTodoRoutes(r, todoHandler)
+	})
 	return router
 }
 
-func LoadTodoRoutes(router chi.Router ){
-	todoHandler := &handler.Todo{}
+func LoadTodoRoutes(router chi.Router, todoHandler *handler.Todo ){
 
 	router.Post("/", todoHandler.Create)
 	router.Get("/", todoHandler.List)
